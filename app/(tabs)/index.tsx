@@ -7,7 +7,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChapterCard, HistoryRow, IconButton, Logo, SearchField, SectionHeader } from '@/components';
 import { SCHOOLS } from '@/data/onboarding';
-import { chapters, history, TOTAL_ANSWERS, TOTAL_PUBLISHERS, trending } from '@/data/sample';
+import { chapters, history, TOTAL_ANSWERS, TOTAL_CHAPTERS, trending } from '@/data/sample';
 import { usePrefs } from '@/store/prefs';
 import { fonts, GREETING, SKY_ART, SKY_DARK_ART, space, timeOfDay, type, useTheme } from '@/theme';
 
@@ -47,7 +47,7 @@ export default function HomeScreen() {
         <View style={[styles.pad, { marginTop: 40 }]}>
           <Text style={[type.hero, { color: heroInk }]}>{GREETING[tod]}</Text>
           <Text style={[type.body, { color: heroInk2, marginTop: 8 }]}>
-            Search {TOTAL_ANSWERS.toLocaleString()} answers from {TOTAL_PUBLISHERS} publishers.
+            Search {TOTAL_ANSWERS.toLocaleString()} answers across {TOTAL_CHAPTERS} chapters.
           </Text>
         </View>
 
