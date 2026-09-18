@@ -19,10 +19,14 @@ export const GREETING: Record<TimeOfDay, { en: string; ar: string }> = {
   night: { en: 'Good night.', ar: 'تصبح على خير' },
 };
 
-// Top-to-bottom stops, ending transparent so it dissolves into the paper.
-export const SKY: Record<TimeOfDay, { light: [string, string, string]; dark: [string, string, string] }> = {
-  morning: { light: ['#FBE6CF', '#FDF3E8', '#FFFFFF00'], dark: ['#2A1F14', '#15110C', '#00000000'] },
-  afternoon: { light: ['#D9ECF3', '#EDF6F9', '#FFFFFF00'], dark: ['#0F2028', '#0A1418', '#00000000'] },
-  evening: { light: ['#E8D6EE', '#F6E6E1', '#FFFFFF00'], dark: ['#231A2E', '#16101C', '#00000000'] },
-  night: { light: ['#D6DCEC', '#EBEEF6', '#FFFFFF00'], dark: ['#0E1530', '#090D1C', '#00000000'] },
+// One picture per time of day, shown as a band behind the greeting.
+// Placeholders rendered by script; replace with generated art of the same names.
+export const SKY_ART: Record<TimeOfDay, number> = {
+  morning: require('../../assets/images/sky/morning.jpg'),
+  afternoon: require('../../assets/images/sky/afternoon.jpg'),
+  evening: require('../../assets/images/sky/evening.jpg'),
+  night: require('../../assets/images/sky/night.jpg'),
 };
+
+// Night art is dark, so the greeting flips to light ink on it.
+export const SKY_DARK_ART: Record<TimeOfDay, boolean> = { morning: false, afternoon: false, evening: false, night: true };

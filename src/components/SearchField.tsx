@@ -35,8 +35,8 @@ export function SearchField({ placeholder, chip, onPress, onChip, onMic }: Props
           <Pressable onPress={onMic} hitSlop={10} accessibilityLabel="Voice search">
             <Ionicons name="mic-outline" size={22} color={colors.ink} />
           </Pressable>
-          <View style={[styles.go, { backgroundColor: colors.accent }]}>
-            <Ionicons name="arrow-up" size={18} color="#FFFFFF" />
+          <View style={[styles.go, { backgroundColor: colors.button }]}>
+            <Ionicons name="arrow-up" size={18} color={colors.buttonInk} />
           </View>
         </View>
       </View>
