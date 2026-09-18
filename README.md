@@ -23,6 +23,7 @@ Set `ANDROID_HOME` to your SDK (`~/Library/Android/sdk` on macOS) and use the JD
 ```
 app/                expo-router routes
   _layout.tsx       fonts, splash, root stack
+  onboarding/       six-step first run: welcome, school, language, topics, publishers, done
   (tabs)/           Home · Topics · Saved, custom pill tab bar
   answer/[id].tsx   answer reader
   search.tsx        search
@@ -31,6 +32,8 @@ src/
   theme/            colour tokens, type scale, useTheme()
   components/       shared UI
   data/sample.ts    placeholder content for layout only
+  data/onboarding.ts schools, languages, topics, publishers offered during setup
+  store/prefs.tsx   user preferences, persisted with AsyncStorage; gates onboarding
 assets/images/      logo and artwork from the mockups
 ```
 
