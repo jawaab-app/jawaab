@@ -5,13 +5,14 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChapterCard, HistoryRow, Logo, PILL_HEIGHT, SearchField, SectionHeader, SegmentTabs } from '@/components';
+import { ChapterCard, HistoryRow, Logo, SearchField, SectionHeader, SegmentTabs } from '@/components';
 import { chapters, history, TOTAL_ANSWERS, TOTAL_CHAPTERS, trending } from '@/data/sample';
 import { fonts, space, useTheme } from '@/theme';
 
-const BAND_HEIGHT = 300;
+// The band ends just under the search field; the list below sits on plain paper.
+const BAND_HEIGHT = 190;
 
-type Segment = 'history' | 'trending' | 'saved';
+type Segment = 'history' | 'trending';
 
 export default function HomeScreen() {
   const { colors, isDark } = useTheme();
@@ -19,7 +20,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const [segment, setSegment] = useState<Segment>('history');
 
-  const rows = segment === 'trending' ? trending : segment === 'saved' ? history.slice(0, 2) : history;
+  const rows = segment === 'trending' ? trending : history;
   const paper = colors.paper;
 
   return (
@@ -27,18 +28,18 @@ export default function HomeScreen() {
       {/* Header band: the tile hero, bleeding out into paper. */}
       <View pointerEvents="none" style={[styles.band, { height: BAND_HEIGHT + insets.top }]}>
         <Image source={require('../../assets/images/hero.webp')} style={StyleSheet.absoluteFill} contentFit="cover" contentPosition="top" />
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: paper, opacity: isDark ? 0.72 : 0.58 }]} />
-        <LinearGradient colors={['transparent', paper]} locations={[0.25, 1]} style={StyleSheet.absoluteFill} />
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: paper, opacity: isDark ? 0.8 : 0.7 }]} />
+        <LinearGradient colors={['transparent', paper]} locations={[0.3, 1]} style={StyleSheet.absoluteFill} />
       </View>
 
       <ScrollView
-        contentContainerStyle={{ paddingTop: insets.top, paddingBottom: PILL_HEIGHT + insets.bottom + 40 }}
+        contentContainerStyle={{ paddingTop: insets.top, paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Masthead: mark centred, settings opposite. */}
         <View style={styles.nav}>
           <View style={styles.navSide} />
-          <Logo size={52} />
+          <Logo size={76} />
           <View style={[styles.navSide, { alignItems: 'flex-end' }]}>
             <Pressable onPress={() => router.push('/settings')} hitSlop={12} accessibilityLabel="Settings">
               <Ionicons name="options-outline" size={24} color={colors.ink} />
@@ -55,7 +56,6 @@ export default function HomeScreen() {
             segments={[
               { key: 'history', label: 'History' },
               { key: 'trending', label: 'Trending' },
-              { key: 'saved', label: 'Saved', count: 18 },
             ]}
             active={segment}
             onChange={(k) => setSegment(k as Segment)}
@@ -98,9 +98,9 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   band: { position: 'absolute', top: 0, left: 0, right: 0 },
   nav: {
-    height: 62,
-    marginTop: 6,
-    marginBottom: 14,
+    height: 84,
+    marginTop: 2,
+    marginBottom: 10,
     paddingHorizontal: space.gutter,
     flexDirection: 'row',
     alignItems: 'center',
