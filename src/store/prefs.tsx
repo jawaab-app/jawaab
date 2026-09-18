@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 
 export type SchoolKey = 'hanafi' | 'maliki' | 'shafii' | 'hanbali' | 'unsure';
 export type LanguageKey = 'en' | 'ar' | 'ur' | 'tr' | 'id' | 'fr';
+export type SkyOverride = 'morning' | 'afternoon' | 'evening' | 'night' | null;
 
 export interface Prefs {
   onboarded: boolean;
@@ -10,6 +11,8 @@ export interface Prefs {
   language: LanguageKey;
   topics: string[];
   publishers: string[];
+  /** Developer: force a time of day for the home sky. null follows the clock. */
+  skyOverride: SkyOverride;
 }
 
 const DEFAULTS: Prefs = {
@@ -18,6 +21,7 @@ const DEFAULTS: Prefs = {
   language: 'en',
   topics: [],
   publishers: [],
+  skyOverride: null,
 };
 
 const KEY = 'jawab.prefs.v1';

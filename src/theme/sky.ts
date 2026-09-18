@@ -12,12 +12,14 @@ export function timeOfDay(d = new Date()): TimeOfDay {
   return 'night';
 }
 
-export const GREETING: Record<TimeOfDay, { en: string; ar: string }> = {
-  morning: { en: 'Good morning.', ar: 'صباح الخير' },
-  afternoon: { en: 'Good afternoon.', ar: 'طاب يومك' },
-  evening: { en: 'Good evening.', ar: 'مساء الخير' },
-  night: { en: 'Good night.', ar: 'تصبح على خير' },
+export const GREETING: Record<TimeOfDay, string> = {
+  morning: 'Good morning.',
+  afternoon: 'Good afternoon.',
+  evening: 'Good evening.',
+  night: 'Good night.',
 };
+
+export const TIMES: TimeOfDay[] = ['morning', 'afternoon', 'evening', 'night'];
 
 // One picture per time of day, shown as a band behind the greeting.
 // Placeholders rendered by script; replace with generated art of the same names.

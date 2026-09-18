@@ -42,6 +42,7 @@ export interface Answer {
 }
 
 export const TOTAL_ANSWERS = 12400;
+export const TOTAL_PUBLISHERS = 8;
 
 export const history: HistoryItem[] = [
   {

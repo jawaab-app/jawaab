@@ -4,13 +4,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconButton } from '@/components';
 import { LANGUAGES, PUBLISHERS, SCHOOLS, TOPICS } from '@/data/onboarding';
 import { usePrefs } from '@/store/prefs';
-import { fonts, space, type, useTheme } from '@/theme';
+import { fonts, space, TIMES, type, useTheme } from '@/theme';
 
 export default function SettingsScreen() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { prefs, reset } = usePrefs();
+  const { prefs, reset, update } = usePrefs();
 
   const groups: { title: string; rows: { label: string; value: string }[] }[] = [
     {
@@ -49,10 +49,28 @@ export default function SettingsScreen() {
           ))}
         </View>
       ))}
-      <Pressable onPress={reset} style={{ marginTop: 40 }} hitSlop={8}>
-        <Text style={[styles.label, { color: colors.ink }]}>Run setup again</Text>
-        <Text style={[type.meta, { color: colors.ink2, marginTop: 4 }]}>Clears school, language, topics and publishers.</Text>
-      </Pressable>
+      <View style={{ marginTop: 32 }}>
+        <Text style={[type.meta, { color: colors.ink2, marginBottom: 12 }]}>Developer</Text>
+        <Text style={[styles.label, { color: colors.ink }]}>Home sky</Text>
+        <View style={styles.chips}>
+          {[null, ...TIMES].map((t) => {
+            const on = prefs.skyOverride === t;
+            return (
+              <Pressable
+                key={t ?? 'auto'}
+                onPress={() => update({ skyOverride: t })}
+                style={[styles.chip, { backgroundColor: on ? colors.button : 'transparent', borderColor: on ? colors.button : colors.hair }]}
+              >
+                <Text style={[styles.chipText, { color: on ? colors.buttonInk : colors.ink }]}>{t ? t[0].toUpperCase() + t.slice(1) : 'Clock'}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+        <Pressable onPress={reset} style={{ marginTop: 24 }} hitSlop={8}>
+          <Text style={[styles.label, { color: colors.ink }]}>Run setup again</Text>
+          <Text style={[type.meta, { color: colors.ink2, marginTop: 4 }]}>Clears school, language, topics and publishers, then shows onboarding.</Text>
+        </Pressable>
+      </View>
     </ScrollView>
   );
 }
@@ -62,4 +80,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 15, borderBottomWidth: StyleSheet.hairlineWidth },
   label: { fontFamily: fonts.medium, fontSize: 17, letterSpacing: -0.4 },
   value: { fontFamily: fonts.regular, fontSize: 16, letterSpacing: -0.3 },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12 },
+  chip: { height: 34, paddingHorizontal: 14, borderRadius: space.pill, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  chipText: { fontFamily: fonts.medium, fontSize: 14, letterSpacing: -0.3 },
 });

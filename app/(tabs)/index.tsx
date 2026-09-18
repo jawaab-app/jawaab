@@ -7,7 +7,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChapterCard, HistoryRow, IconButton, Logo, SearchField, SectionHeader } from '@/components';
 import { SCHOOLS } from '@/data/onboarding';
-import { chapters, history, TOTAL_ANSWERS, trending } from '@/data/sample';
+import { chapters, history, TOTAL_ANSWERS, TOTAL_PUBLISHERS, trending } from '@/data/sample';
 import { usePrefs } from '@/store/prefs';
 import { fonts, GREETING, SKY_ART, SKY_DARK_ART, space, timeOfDay, type, useTheme } from '@/theme';
 
@@ -21,13 +21,13 @@ export default function HomeScreen() {
   const [segment, setSegment] = useState<Segment>('recent');
   const rows = segment === 'trending' ? trending : history;
 
-  const tod = timeOfDay();
+  const tod = prefs.skyOverride ?? timeOfDay();
   const school = SCHOOLS.find((s) => s.key === prefs.school);
   const schoolLabel = school && school.key !== 'unsure' ? school.name : 'All schools';
   const onDark = SKY_DARK_ART[tod] || isDark;
   const heroInk = onDark ? '#FFFFFF' : colors.ink;
   const heroInk2 = onDark ? 'rgba(255,255,255,0.78)' : colors.ink2;
-  const bandHeight = 380 + insets.top;
+  const bandHeight = 330 + insets.top;
 
   return (
     <View style={[styles.root, { backgroundColor: colors.paper }]}>
@@ -35,7 +35,7 @@ export default function HomeScreen() {
       <View pointerEvents="none" style={[styles.sky, { height: bandHeight }]}>
         <Image source={SKY_ART[tod]} style={StyleSheet.absoluteFill} contentFit="cover" contentPosition="top" transition={400} />
         {isDark && !SKY_DARK_ART[tod] && <View style={[StyleSheet.absoluteFill, { backgroundColor: '#000', opacity: 0.55 }]} />}
-        <LinearGradient colors={[`${colors.paper}00`, colors.paper]} locations={[0.45, 1]} style={StyleSheet.absoluteFill} />
+        <LinearGradient colors={[`${colors.paper}00`, `${colors.paper}CC`, colors.paper]} locations={[0.5, 0.82, 1]} style={StyleSheet.absoluteFill} />
       </View>
 
       <ScrollView contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
@@ -44,10 +44,11 @@ export default function HomeScreen() {
           <IconButton name="options-outline" label="Settings" onPress={() => router.push('/settings')} />
         </View>
 
-        <View style={[styles.pad, { marginTop: 36 }]}>
-          <Text style={[styles.arabic, { color: heroInk2 }]}>{GREETING[tod].ar}</Text>
-          <Text style={[type.hero, { color: heroInk, marginTop: 2 }]}>{GREETING[tod].en}</Text>
-          <Text style={[type.body, { color: heroInk2, marginTop: 8 }]}>{TOTAL_ANSWERS.toLocaleString()} answers, each with its author.</Text>
+        <View style={[styles.pad, { marginTop: 40 }]}>
+          <Text style={[type.hero, { color: heroInk }]}>{GREETING[tod]}</Text>
+          <Text style={[type.body, { color: heroInk2, marginTop: 8 }]}>
+            Search {TOTAL_ANSWERS.toLocaleString()} answers from {TOTAL_PUBLISHERS} publishers.
+          </Text>
         </View>
 
         <View style={[styles.pad, { marginTop: 26 }]}>
@@ -85,7 +86,6 @@ const styles = StyleSheet.create({
   sky: { position: 'absolute', top: 0, left: 0, right: 0 },
   pad: { paddingHorizontal: space.gutter },
   nav: { height: 44, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  arabic: { fontSize: 17, lineHeight: 24, writingDirection: 'rtl', textAlign: 'left' },
   toggle: { flexDirection: 'row', gap: 18, paddingBottom: 4 },
   toggleText: { fontFamily: fonts.medium, fontSize: 15, letterSpacing: -0.3 },
   rail: { paddingHorizontal: space.gutter, paddingTop: 14, gap: 8 },
