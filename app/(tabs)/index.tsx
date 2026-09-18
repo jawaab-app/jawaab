@@ -26,7 +26,7 @@ export default function HomeScreen() {
   const schoolLabel = school && school.key !== 'unsure' ? school.name : 'All schools';
   const onDark = SKY_DARK_ART[tod] || isDark;
   const heroInk = onDark ? '#FFFFFF' : colors.ink;
-  const heroInk2 = onDark ? 'rgba(255,255,255,0.78)' : colors.ink2;
+  const heroInk2 = onDark ? 'rgba(255,255,255,0.8)' : 'rgba(10,10,10,0.72)';
   const bandHeight = 330 + insets.top;
 
   return (

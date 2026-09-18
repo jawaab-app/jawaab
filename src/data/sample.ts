@@ -2,8 +2,6 @@
 // every answer, byline, date and number here was written for the mockup and
 // must be replaced with scraped records before this is shown to anyone.
 
-import type { ImageSourcePropType } from 'react-native';
-
 export type School = 'Ḥanafī' | 'Mālikī' | 'Shāfiʿī' | 'Ḥanbalī';
 
 export interface HistoryItem {
@@ -20,8 +18,6 @@ export interface Chapter {
   name: string;
   arabic: string;
   count: number;
-  art: ImageSourcePropType;
-  artPosition?: string;
 }
 
 export interface Answer {
@@ -94,12 +90,12 @@ export const trending: HistoryItem[] = [
 ];
 
 export const chapters: Chapter[] = [
-  { id: 'purification', name: 'Purification', arabic: 'الطهارة', count: 98, art: require('../../assets/images/bg.webp'), artPosition: 'top' },
-  { id: 'prayer', name: 'Prayer', arabic: 'الصلاة', count: 128, art: require('../../assets/images/hero.webp'), artPosition: 'center' },
-  { id: 'fasting', name: 'Fasting', arabic: 'الصوم', count: 72, art: require('../../assets/images/bg.webp'), artPosition: 'bottom' },
-  { id: 'zakah', name: 'Zakāh', arabic: 'الزكاة', count: 110, art: require('../../assets/images/hero.webp'), artPosition: 'top' },
-  { id: 'family', name: 'Family', arabic: 'النكاح', count: 86, art: require('../../assets/images/madrasa-goodall.jpg'), artPosition: 'center' },
-  { id: 'finance', name: 'Finance', arabic: 'المعاملات', count: 64, art: require('../../assets/images/madrasa-deutsch.jpg'), artPosition: 'center' },
+  { id: 'purification', name: 'Purification', arabic: 'الطهارة', count: 98 },
+  { id: 'prayer', name: 'Prayer', arabic: 'الصلاة', count: 128 },
+  { id: 'fasting', name: 'Fasting', arabic: 'الصوم', count: 72 },
+  { id: 'zakah', name: 'Zakāh', arabic: 'الزكاة', count: 110 },
+  { id: 'family', name: 'Family', arabic: 'النكاح', count: 86 },
+  { id: 'finance', name: 'Finance', arabic: 'المعاملات', count: 64 },
 ];
 
 export const TOTAL_CHAPTERS = 24;

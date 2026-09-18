@@ -11,7 +11,7 @@ interface Props {
 // Pill buttons. Primary is ink on paper, secondary is hairline, onImage is white.
 export function Button({ label, onPress, variant = 'primary', disabled }: Props) {
   const { colors } = useTheme();
-  const bg = variant === 'primary' ? colors.button : variant === 'onImage' ? '#FFFFFF' : 'transparent';
+  const bg = variant === 'primary' ? colors.button : variant === 'onImage' ? '#FFFFFF' : colors.card;
   const fg = variant === 'primary' ? colors.buttonInk : variant === 'onImage' ? '#0A0A0A' : colors.ink;
   return (
     <Pressable
