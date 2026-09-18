@@ -24,7 +24,7 @@ export default function SearchScreen() {
             autoFocus
             value={q}
             onChangeText={setQ}
-            placeholder="Search answers"
+            placeholder="Ask anything…"
             placeholderTextColor={colors.ink2}
             style={[styles.input, { color: colors.ink }]}
             returnKeyType="search"
