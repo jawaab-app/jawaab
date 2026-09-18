@@ -12,12 +12,9 @@ export default function SavedScreen() {
   const saved = [...history, ...trending];
 
   return (
-    <ScrollView
-      style={{ backgroundColor: colors.paper }}
-      contentContainerStyle={{ paddingTop: insets.top + 18, paddingBottom: 32, paddingHorizontal: space.gutter }}
-    >
-      <Text style={[type.h1, { color: colors.ink }]}>Saved</Text>
-      <Text style={[type.meta, { color: colors.ink2, marginTop: 6, marginBottom: 8 }]}>{saved.length} answers, kept on this device.</Text>
+    <ScrollView style={{ backgroundColor: colors.paper }} contentContainerStyle={{ paddingTop: insets.top + 24, paddingBottom: 40, paddingHorizontal: space.gutter }}>
+      <Text style={[type.largeTitle, { color: colors.ink }]}>Saved</Text>
+      <Text style={[type.body, { color: colors.ink2, marginTop: 8, marginBottom: 12 }]}>{saved.length} answers, kept on this device.</Text>
       <View>
         {saved.map((item, i) => (
           <HistoryRow key={item.id} item={{ ...item, live: false }} last={i === saved.length - 1} onPress={() => router.push(`/answer/${item.id}`)} />

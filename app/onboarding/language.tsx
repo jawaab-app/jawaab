@@ -17,8 +17,8 @@ export default function LanguageScreen() {
       onPrimary={next}
       onSkip={next}
     >
-      {LANGUAGES.map((l) => (
-        <ChoiceRow key={l.key} title={l.name} trailing={l.native !== l.name ? l.native : undefined} selected={prefs.language === l.key} onPress={() => update({ language: l.key })} />
+      {LANGUAGES.map((l, i) => (
+        <ChoiceRow key={l.key} last={i === LANGUAGES.length - 1} title={l.name} trailing={l.native !== l.name ? l.native : undefined} selected={prefs.language === l.key} onPress={() => update({ language: l.key })} />
       ))}
     </OnboardingFrame>
   );

@@ -1,39 +1,20 @@
-import { Image } from 'expo-image';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { fonts, type, useTheme } from '@/theme';
+import { Pressable, StyleSheet, Text } from 'react-native';
+import { fonts, space, useTheme } from '@/theme';
 import type { Chapter } from '@/data/sample';
 
-export const CHAPTER_CARD_WIDTH = 182;
-
+// Chapters read as a row of hairline pills.
 export function ChapterCard({ chapter, onPress }: { chapter: Chapter; onPress?: () => void }) {
   const { colors } = useTheme();
   return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.card,
-        { backgroundColor: colors.card, borderColor: colors.hair, transform: [{ scale: pressed ? 0.98 : 1 }] },
-      ]}
-    >
-      <Image source={chapter.art} style={styles.art} contentFit="cover" contentPosition={chapter.artPosition as never} transition={200} />
-      <View style={styles.text}>
-        <Text style={[type.cardTitle, { color: colors.ink }]} numberOfLines={1}>
-          {chapter.name}
-        </Text>
-        <Text style={[styles.count, { color: colors.ink3 }]}>{chapter.count}</Text>
-      </View>
+    <Pressable onPress={onPress} style={({ pressed }) => [styles.pill, { borderColor: colors.hair, opacity: pressed ? 0.5 : 1 }]}>
+      <Text style={[styles.name, { color: colors.ink }]}>{chapter.name}</Text>
+      <Text style={[styles.count, { color: colors.ink3 }]}>{chapter.count}</Text>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    width: CHAPTER_CARD_WIDTH,
-    borderRadius: 14,
-    borderWidth: StyleSheet.hairlineWidth,
-    overflow: 'hidden',
-  },
-  art: { width: '100%', height: 118 },
-  text: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 14, gap: 3 },
-  count: { fontFamily: fonts.body, fontSize: 15 },
+  pill: { height: 40, paddingHorizontal: 16, borderRadius: space.pill, borderWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  name: { fontFamily: fonts.medium, fontSize: 15, letterSpacing: -0.4 },
+  count: { fontFamily: fonts.regular, fontSize: 13, letterSpacing: -0.1 },
 });

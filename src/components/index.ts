@@ -1,4 +1,6 @@
 export * from './Logo';
+export * from './IconButton';
+export * from './Button';
 export * from './SearchField';
 export * from './SegmentTabs';
 export * from './HistoryRow';

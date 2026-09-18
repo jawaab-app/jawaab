@@ -29,18 +29,18 @@ export default function DoneScreen() {
       primaryLabel="Start reading"
       onPrimary={() => update({ onboarded: true })}
     >
-      <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.hair }]}>
+      <View>
         {rows.map((r, i) => (
           <View key={r.label} style={[styles.row, i < rows.length - 1 && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.hair }]}>
-            <Ionicons name={r.icon} size={20} color={colors.accent} />
+            <Ionicons name={r.icon} size={20} color={colors.ink} />
             <View style={{ flex: 1 }}>
-              <Text style={[type.label, { color: colors.ink3 }]}>{r.label.toUpperCase()}</Text>
+              <Text style={[type.meta, { color: colors.ink2 }]}>{r.label}</Text>
               <Text style={[styles.value, { color: colors.ink }]}>{r.value}</Text>
             </View>
           </View>
         ))}
       </View>
-      <Text style={[type.meta, { color: colors.ink3, marginTop: 18 }]}>
+      <Text style={[type.meta, { color: colors.ink2, marginTop: 24 }]}>
         Jawāb never edits an answer. What you read is what the publisher wrote, with a link back to the original.
       </Text>
     </OnboardingFrame>
@@ -48,7 +48,6 @@ export default function DoneScreen() {
 }
 
 const styles = StyleSheet.create({
-  card: { borderRadius: 16, borderWidth: StyleSheet.hairlineWidth, paddingHorizontal: 16 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14 },
-  value: { fontFamily: fonts.medium, fontSize: 15.5, marginTop: 3, lineHeight: 21 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 16, paddingVertical: 15 },
+  value: { fontFamily: fonts.medium, fontSize: 17, letterSpacing: -0.4, marginTop: 2, lineHeight: 22 },
 });

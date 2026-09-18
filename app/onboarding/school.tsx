@@ -21,9 +21,10 @@ export default function SchoolScreen() {
         next();
       }}
     >
-      {SCHOOLS.map((s) => (
+      {SCHOOLS.map((s, i) => (
         <ChoiceRow
           key={s.key}
+          last={i === SCHOOLS.length - 1}
           title={s.name}
           detail={s.note}
           trailing={s.arabic || undefined}

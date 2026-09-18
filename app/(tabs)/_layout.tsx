@@ -17,13 +17,13 @@ export default function TabsLayout() {
   return (
     <NativeTabs
       backgroundColor={colors.paper}
-      tintColor={colors.accent}
-      iconColor={{ default: colors.ink2, selected: colors.accent }}
-      indicatorColor={colors.accentSoft}
+      tintColor={colors.ink}
+      iconColor={{ default: colors.ink3, selected: colors.ink }}
+      indicatorColor="transparent"
       labelVisibilityMode="labeled"
       labelStyle={{
-        default: { color: colors.ink2, fontFamily: fonts.medium, fontSize: 12 },
-        selected: { color: colors.accent, fontFamily: fonts.medium, fontSize: 12 },
+        default: { color: colors.ink3, fontFamily: fonts.medium, fontSize: 11 },
+        selected: { color: colors.ink, fontFamily: fonts.medium, fontSize: 11 },
       }}
     >
       <NativeTabs.Trigger name="index">
@@ -31,8 +31,8 @@ export default function TabsLayout() {
         <Icon src={tabIcon('home-outline', 'home')} />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="topics">
-        <Label>Topics</Label>
-        <Icon src={tabIcon('list-outline', 'list')} />
+        <Label>Chapters</Label>
+        <Icon src={tabIcon('book-outline', 'book')} />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="saved">
         <Label>Saved</Label>

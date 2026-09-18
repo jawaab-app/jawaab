@@ -1,5 +1,4 @@
-import { Belleza_400Regular } from '@expo-google-fonts/belleza';
-import { Montserrat_400Regular, Montserrat_500Medium, Montserrat_600SemiBold } from '@expo-google-fonts/montserrat';
+import { InterTight_400Regular, InterTight_500Medium, InterTight_600SemiBold, InterTight_700Bold } from '@expo-google-fonts/inter-tight';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -23,10 +22,10 @@ function RootNavigator() {
   const { colors, isDark } = useTheme();
   const { prefs, ready } = usePrefs();
   const [loaded, error] = useFonts({
-    Belleza_400Regular,
-    Montserrat_400Regular,
-    Montserrat_500Medium,
-    Montserrat_600SemiBold,
+    InterTight_400Regular,
+    InterTight_500Medium,
+    InterTight_600SemiBold,
+    InterTight_700Bold,
   });
 
   const fontsReady = loaded || !!error;
@@ -53,7 +52,17 @@ function RootNavigator() {
         <Stack.Protected guard={prefs.onboarded}>
           <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
           <Stack.Screen name="answer/[id]" />
-          <Stack.Screen name="settings" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+          <Stack.Screen
+            name="settings"
+            options={{
+              presentation: 'formSheet',
+              sheetAllowedDetents: [0.62, 1],
+              sheetInitialDetentIndex: 0,
+              sheetGrabberVisible: true,
+              sheetCornerRadius: 28,
+              contentStyle: { backgroundColor: colors.paper },
+            }}
+          />
           <Stack.Screen name="search" options={{ animation: 'fade' }} />
         </Stack.Protected>
       </Stack>

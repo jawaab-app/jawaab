@@ -1,10 +1,9 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { fonts, useTheme } from '@/theme';
+import { fonts, space, useTheme } from '@/theme';
 
 export interface Segment {
   key: string;
   label: string;
-  count?: number;
 }
 
 interface Props {
@@ -13,23 +12,22 @@ interface Props {
   onChange: (key: string) => void;
 }
 
+// Small pills: selected is ink-filled, others hairline.
 export function SegmentTabs({ segments, active, onChange }: Props) {
   const { colors } = useTheme();
   return (
-    <View style={[styles.row, { borderBottomColor: colors.hair }]}>
+    <View style={styles.row}>
       {segments.map((s) => {
         const on = s.key === active;
         return (
-          <Pressable key={s.key} onPress={() => onChange(s.key)} style={styles.tab} accessibilityRole="tab" accessibilityState={{ selected: on }}>
-            <View style={styles.labelRow}>
-              <Text style={[styles.label, { color: on ? colors.ink : colors.ink3 }]}>{s.label}</Text>
-              {s.count != null && (
-                <View style={[styles.count, { backgroundColor: colors.field }]}>
-                  <Text style={[styles.countText, { color: colors.ink2 }]}>{s.count}</Text>
-                </View>
-              )}
-            </View>
-            <View style={[styles.underline, { backgroundColor: on ? colors.accent : 'transparent' }]} />
+          <Pressable
+            key={s.key}
+            onPress={() => onChange(s.key)}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: on }}
+            style={[styles.pill, { backgroundColor: on ? colors.button : 'transparent', borderColor: on ? colors.button : colors.hair }]}
+          >
+            <Text style={[styles.label, { color: on ? colors.buttonInk : colors.ink }]}>{s.label}</Text>
           </Pressable>
         );
       })}
@@ -38,11 +36,7 @@ export function SegmentTabs({ segments, active, onChange }: Props) {
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: 26, borderBottomWidth: StyleSheet.hairlineWidth },
-  tab: { paddingTop: 6 },
-  labelRow: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingBottom: 9 },
-  label: { fontFamily: fonts.medium, fontSize: 20, letterSpacing: -0.2 },
-  count: { borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2 },
-  countText: { fontFamily: fonts.medium, fontSize: 12.5 },
-  underline: { height: 2.5, borderRadius: 2 },
+  row: { flexDirection: 'row', gap: 8 },
+  pill: { height: 34, paddingHorizontal: 16, borderRadius: space.pill, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  label: { fontFamily: fonts.medium, fontSize: 14, letterSpacing: -0.3 },
 });

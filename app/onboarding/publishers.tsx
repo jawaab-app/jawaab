@@ -23,9 +23,10 @@ export default function PublishersScreen() {
       onPrimary={next}
       onSkip={next}
     >
-      {PUBLISHERS.map((p) => (
+      {PUBLISHERS.map((p, i) => (
         <ChoiceRow
           key={p.key}
+          last={i === PUBLISHERS.length - 1}
           multi
           title={p.name}
           detail={`${p.schools} · ${p.region}`}

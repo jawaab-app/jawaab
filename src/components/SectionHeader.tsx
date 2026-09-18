@@ -1,17 +1,28 @@
-import { StyleSheet, Text, View } from 'react-native';
-import { type, useTheme } from '@/theme';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { fonts, useTheme } from '@/theme';
 
-export function SectionHeader({ title }: { title: string }) {
+interface Props {
+  title: string;
+  action?: string;
+  onAction?: () => void;
+}
+
+export function SectionHeader({ title, action, onAction }: Props) {
   const { colors } = useTheme();
   return (
     <View style={styles.row}>
-      <Text style={[type.label, { color: colors.ink3 }]}>{title.toUpperCase()}</Text>
-      <View style={[styles.line, { backgroundColor: colors.hair }]} />
+      <Text style={[styles.title, { color: colors.ink2 }]}>{title}</Text>
+      {action && (
+        <Pressable onPress={onAction} hitSlop={8}>
+          <Text style={[styles.action, { color: colors.ink }]}>{action}</Text>
+        </Pressable>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  line: { flex: 1, height: StyleSheet.hairlineWidth },
+  row: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
+  title: { fontFamily: fonts.medium, fontSize: 13, letterSpacing: -0.1 },
+  action: { fontFamily: fonts.medium, fontSize: 13, letterSpacing: -0.1 },
 });

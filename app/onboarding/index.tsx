@@ -1,56 +1,48 @@
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Logo } from '@/components';
-import { PrimaryButton } from '@/components/onboarding';
+import { Button, Logo } from '@/components';
 import { usePrefs } from '@/store/prefs';
-import { fonts, space, useTheme } from '@/theme';
+import { fonts, space } from '@/theme';
 
+// Full-bleed painting, white type, two pills. The only image in the app.
 export default function WelcomeScreen() {
-  const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { update } = usePrefs();
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.paper }]}>
-      <View style={styles.hero}>
-        <Image source={require('../../assets/images/bg.webp')} style={StyleSheet.absoluteFill} contentFit="cover" contentPosition="top" />
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.paper, opacity: isDark ? 0.6 : 0.35 }]} />
-        <LinearGradient colors={['transparent', colors.paper]} locations={[0.35, 1]} style={StyleSheet.absoluteFill} />
+    <View style={styles.root}>
+      <Image source={require('../../assets/images/ferraris-greeting.jpg')} style={StyleSheet.absoluteFill} contentFit="cover" contentPosition="center" />
+      <LinearGradient colors={['rgba(0,0,0,0.35)', 'rgba(0,0,0,0)', 'rgba(0,0,0,0.55)']} locations={[0, 0.45, 1]} style={StyleSheet.absoluteFill} />
+
+      <View style={[styles.top, { paddingTop: insets.top + 12 }]}>
+        <Logo size={34} color="#FFFFFF" />
       </View>
 
-      <View style={[styles.body, { paddingBottom: Math.max(insets.bottom, 16) + 8 }]}>
-        <Logo size={92} />
-        <Text style={[styles.title, { color: colors.ink }]}>Jawāb</Text>
-        <Text style={[styles.tagline, { color: colors.ink }]}>Every answer, with its author.</Text>
-        <Text style={[styles.lede, { color: colors.ink2 }]}>
-          An index of answers written by scholars and publishers you can name. Each one carries its publisher, its school and its date, and the original is always one tap away.
-        </Text>
+      <View style={styles.centre}>
+        <Text style={styles.headline}>Every answer,{'\n'}with its author.</Text>
+        <Text style={styles.sub}>A search engine for Islamic answers. Publisher, scholar, school and date on every one.</Text>
+      </View>
 
-        <View style={{ height: 28 }} />
-        <PrimaryButton label="Get started" onPress={() => router.push('/onboarding/school')} />
-        <Pressable
-          onPress={() => update({ onboarded: true })}
-          hitSlop={10}
-          style={styles.secondary}
-        >
-          <Text style={[styles.secondaryText, { color: colors.ink2 }]}>Skip for now</Text>
-        </Pressable>
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) + 10 }]}>
+        <Button label="Get started" variant="onImage" onPress={() => router.push('/onboarding/school')} />
+        <View style={{ height: 10 }} />
+        <Button label="Set up later" onPress={() => update({ onboarded: true })} />
+        <Text style={styles.legal}>Answers are reproduced under licence and never edited.</Text>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
-  hero: { height: '46%' },
-  body: { flex: 1, paddingHorizontal: space.gutter, justifyContent: 'flex-end' },
-  title: { fontFamily: fonts.display, fontSize: 44, marginTop: 14, letterSpacing: -0.5 },
-  tagline: { fontFamily: fonts.display, fontSize: 24, marginTop: 4 },
-  lede: { fontFamily: fonts.body, fontSize: 15.5, lineHeight: 24, marginTop: 14 },
-  secondary: { alignSelf: 'center', paddingVertical: 16 },
-  secondaryText: { fontFamily: fonts.medium, fontSize: 15 },
+  root: { flex: 1, backgroundColor: '#000' },
+  top: { paddingHorizontal: space.gutter },
+  centre: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: space.gutter + 8 },
+  headline: { fontFamily: fonts.semibold, fontSize: 46, lineHeight: 48, letterSpacing: -2.2, color: '#FFFFFF', textAlign: 'center' },
+  sub: { fontFamily: fonts.regular, fontSize: 14, lineHeight: 19, letterSpacing: -0.2, color: 'rgba(255,255,255,0.85)', textAlign: 'center', marginTop: 16, maxWidth: 280 },
+  footer: { paddingHorizontal: space.gutter },
+  legal: { fontFamily: fonts.regular, fontSize: 11, letterSpacing: -0.1, color: 'rgba(255,255,255,0.7)', textAlign: 'center', marginTop: 16 },
 });
