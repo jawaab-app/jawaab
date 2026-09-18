@@ -61,9 +61,9 @@ export const fonts = {
 } as const;
 
 export const type = {
-  hero: { fontFamily: fonts.semibold, fontSize: 44, lineHeight: 46, letterSpacing: -2 },
-  largeTitle: { fontFamily: fonts.semibold, fontSize: 34, lineHeight: 37, letterSpacing: -1.4 },
-  h1: { fontFamily: fonts.semibold, fontSize: 28, lineHeight: 31, letterSpacing: -1.1 },
+  hero: { fontFamily: fonts.semibold, fontSize: 40, lineHeight: 46, letterSpacing: -1.8 },
+  largeTitle: { fontFamily: fonts.semibold, fontSize: 34, lineHeight: 40, letterSpacing: -1.4 },
+  h1: { fontFamily: fonts.semibold, fontSize: 28, lineHeight: 33, letterSpacing: -1.1 },
   title: { fontFamily: fonts.semibold, fontSize: 20, lineHeight: 24, letterSpacing: -0.6 },
   question: { fontFamily: fonts.medium, fontSize: 17, lineHeight: 22, letterSpacing: -0.4 },
   cardTitle: { fontFamily: fonts.medium, fontSize: 16, lineHeight: 20, letterSpacing: -0.4 },

@@ -2,19 +2,35 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChapterCard, HistoryRow, IconButton, Logo, SearchField, SectionHeader, SegmentTabs } from '@/components';
+import { ChapterCard, CoverCard, HistoryRow, IconButton, Logo, SearchField, SectionHeader, SegmentTabs } from '@/components';
 import { chapters, history, TOTAL_ANSWERS, trending } from '@/data/sample';
-import { space, type, useTheme } from '@/theme';
+import { space, useTheme } from '@/theme';
 
 type Segment = 'recent' | 'trending';
 
-function greeting() {
+// One cover per time of day. Placeholders until the generated set lands in assets/images/covers.
+const COVERS = {
+  morning: require('../../assets/images/madrasa-goodall.jpg'),
+  afternoon: require('../../assets/images/madrasa-deutsch.jpg'),
+  evening: require('../../assets/images/ferraris-greeting.jpg'),
+  night: require('../../assets/images/ferraris-greeting.jpg'),
+} as const;
+
+function timeOfDay(): keyof typeof COVERS {
   const h = new Date().getHours();
-  if (h < 5) return 'Good night.';
-  if (h < 12) return 'Good morning.';
-  if (h < 17) return 'Good afternoon.';
-  return 'Good evening.';
+  if (h < 5) return 'night';
+  if (h < 12) return 'morning';
+  if (h < 17) return 'afternoon';
+  if (h < 21) return 'evening';
+  return 'night';
 }
+
+const GREETING: Record<keyof typeof COVERS, string> = {
+  morning: 'Good morning.',
+  afternoon: 'Good afternoon.',
+  evening: 'Good evening.',
+  night: 'Good night.',
+};
 
 export default function HomeScreen() {
   const { colors } = useTheme();
@@ -22,6 +38,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const [segment, setSegment] = useState<Segment>('recent');
   const rows = segment === 'trending' ? trending : history;
+  const tod = timeOfDay();
 
   return (
     <ScrollView
@@ -34,16 +51,15 @@ export default function HomeScreen() {
         <IconButton name="options-outline" label="Settings" onPress={() => router.push('/settings')} />
       </View>
 
-      <View style={[styles.pad, { marginTop: 36 }]}>
-        <Text style={[type.hero, { color: colors.ink }]}>{greeting()}</Text>
-        <Text style={[type.body, { color: colors.ink2, marginTop: 10 }]}>{TOTAL_ANSWERS.toLocaleString()} answers, each with its author.</Text>
+      <View style={[styles.pad, { marginTop: 16 }]}>
+        <CoverCard source={COVERS[tod]} title={GREETING[tod]} subtitle={`${TOTAL_ANSWERS.toLocaleString()} answers, each with its author.`} />
       </View>
 
-      <View style={[styles.pad, { marginTop: 28 }]}>
+      <View style={[styles.pad, { marginTop: 14 }]}>
         <SearchField placeholder="Ask anything…" onPress={() => router.push('/search')} />
       </View>
 
-      <View style={[styles.pad, { marginTop: 40 }]}>
+      <View style={[styles.pad, { marginTop: 36 }]}>
         <SegmentTabs
           segments={[
             { key: 'recent', label: 'Recent' },

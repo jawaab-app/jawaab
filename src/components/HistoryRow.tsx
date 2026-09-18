@@ -15,7 +15,7 @@ export function HistoryRow({ item, onPress, last }: Props) {
     <Pressable onPress={onPress} style={({ pressed }) => [styles.row, { borderBottomColor: last ? 'transparent' : colors.hair, opacity: pressed ? 0.5 : 1 }]}>
       <Text style={[type.question, { color: colors.ink }]}>{item.question}</Text>
       <View style={styles.meta}>
-        <Text style={[type.meta, { color: colors.ink2 }]}>
+        <Text style={[type.meta, { color: colors.ink2, flex: 1, marginRight: 12 }]} numberOfLines={1}>
           {item.publisher} · {item.school}
         </Text>
         <Text style={[item.live ? type.metaStrong : type.meta, { color: item.live ? colors.accent : colors.ink3 }]}>{item.when}</Text>
