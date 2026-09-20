@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 export type SchoolKey = 'hanafi' | 'maliki' | 'shafii' | 'hanbali' | 'unsure';
 export type LanguageKey = 'en' | 'ar' | 'ur' | 'tr' | 'id' | 'fr';
 export type SkyOverride = 'morning' | 'afternoon' | 'evening' | 'night' | null;
+export type Appearance = 'system' | 'light' | 'dark';
 
 export interface Prefs {
   onboarded: boolean;
@@ -13,6 +14,7 @@ export interface Prefs {
   publishers: string[];
   /** Developer: force a time of day for the home sky. null follows the clock. */
   skyOverride: SkyOverride;
+  appearance: Appearance;
 }
 
 const DEFAULTS: Prefs = {
@@ -22,6 +24,7 @@ const DEFAULTS: Prefs = {
   topics: [],
   publishers: [],
   skyOverride: null,
+  appearance: 'system',
 };
 
 const KEY = 'jawab.prefs.v1';
@@ -72,6 +75,10 @@ export function PrefsProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(() => ({ prefs, ready, update, reset }), [prefs, ready, update, reset]);
   return <PrefsContext.Provider value={value}>{children}</PrefsContext.Provider>;
+}
+
+export function usePrefsOptional(): PrefsContextValue | null {
+  return useContext(PrefsContext);
 }
 
 export function usePrefs(): PrefsContextValue {

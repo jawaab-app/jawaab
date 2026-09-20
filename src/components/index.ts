@@ -7,3 +7,5 @@ export * from './HistoryRow';
 export * from './ChapterCard';
 export * from './SectionHeader';
 export * from './FlatTabBar';
+export * from './SettingsRow';
+export * from './SettingsPage';

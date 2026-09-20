@@ -21,7 +21,7 @@ export default function SchoolScreen() {
       }}
     >
       {SCHOOLS.map((s, i) => (
-        <ChoiceRow key={s.key} last={i === SCHOOLS.length - 1} title={s.name} trailing={s.arabic || undefined} selected={prefs.school === s.key} onPress={() => update({ school: s.key })} />
+        <ChoiceRow key={s.key} last={i === SCHOOLS.length - 1} title={s.name} selected={prefs.school === s.key} onPress={() => update({ school: s.key })} />
       ))}
     </OnboardingFrame>
   );
