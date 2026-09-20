@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconButton } from '@/components';
-import { LANGUAGES, PUBLISHERS, SCHOOLS, TOPICS } from '@/data/onboarding';
+import { LANGUAGES, SCHOOLS, TOPICS } from '@/data/onboarding';
 import { usePrefs } from '@/store/prefs';
 import { fonts, space, TIMES, type, useTheme } from '@/theme';
 
@@ -19,7 +19,6 @@ export default function SettingsScreen() {
         { label: 'School', value: SCHOOLS.find((s) => s.key === prefs.school)?.name ?? 'Every school' },
         { label: 'Language', value: LANGUAGES.find((l) => l.key === prefs.language)?.name ?? 'English' },
         { label: 'Topics', value: prefs.topics.length ? `${TOPICS.filter((t) => prefs.topics.includes(t.key)).length} chosen` : 'All' },
-        { label: 'Publishers', value: prefs.publishers.length ? `${PUBLISHERS.filter((p) => prefs.publishers.includes(p.key)).length} chosen` : 'All' },
       ],
     },
     {
@@ -68,7 +67,7 @@ export default function SettingsScreen() {
         </View>
         <Pressable onPress={reset} style={{ marginTop: 24 }} hitSlop={8}>
           <Text style={[styles.label, { color: colors.ink }]}>Run setup again</Text>
-          <Text style={[type.meta, { color: colors.ink2, marginTop: 4 }]}>Clears school, language, topics and publishers, then shows onboarding.</Text>
+          <Text style={[type.meta, { color: colors.ink2, marginTop: 4 }]}>Clears your school and topics, then shows onboarding again.</Text>
         </Pressable>
       </View>
     </ScrollView>
