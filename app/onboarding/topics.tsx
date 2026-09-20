@@ -1,22 +1,31 @@
+import * as Haptics from 'expo-haptics';
 import { StyleSheet, View } from 'react-native';
-import { Chip, OnboardingFrame } from '@/components/onboarding';
+import { ChapterStrip, Chip, OnboardingFrame, Stagger } from '@/components/onboarding';
 import { TOPICS } from '@/data/onboarding';
 import { usePrefs } from '@/store/prefs';
 
 export default function TopicsScreen() {
   const { prefs, update } = usePrefs();
-  const finish = () => update({ onboarded: true });
+  const finish = () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    update({ onboarded: true });
+  };
 
-  const toggle = (key: string) =>
+  const toggle = (key: string) => {
+    Haptics.selectionAsync();
     update({ topics: prefs.topics.includes(key) ? prefs.topics.filter((t) => t !== key) : [...prefs.topics, key] });
+  };
 
   return (
-    <OnboardingFrame step={2} title="What do you ask about?" primaryLabel="Done" onPrimary={finish} onSkip={finish}>
+    <OnboardingFrame step={3} title="What do you ask about?" hint="Shapes what you see first." primaryLabel="Done" onPrimary={finish} onSkip={finish}>
       <View style={styles.wrap}>
-        {TOPICS.map((t) => (
-          <Chip key={t.key} label={t.name} selected={prefs.topics.includes(t.key)} onPress={() => toggle(t.key)} />
+        {TOPICS.map((t, i) => (
+          <Stagger key={t.key} index={i}>
+            <Chip label={t.name} selected={prefs.topics.includes(t.key)} onPress={() => toggle(t.key)} />
+          </Stagger>
         ))}
       </View>
+      <ChapterStrip topics={prefs.topics} />
     </OnboardingFrame>
   );
 }

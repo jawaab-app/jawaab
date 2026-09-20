@@ -30,7 +30,7 @@ export default function WelcomeScreen() {
       </View>
 
       <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) + 10 }]}>
-        <Button label="Get started" onPress={() => router.push('/onboarding/school')} />
+        <Button label="Get started" onPress={() => router.push('/onboarding/trace')} />
         <View style={{ height: 10 }} />
         <Button label="Set up later" variant="secondary" onPress={() => update({ onboarded: true })} />
         <Text style={styles.legal}>Answers are reproduced under licence and never edited.</Text>

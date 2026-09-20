@@ -1,5 +1,6 @@
+import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import { ChoiceRow, OnboardingFrame } from '@/components/onboarding';
+import { ChoiceRow, OnboardingFrame, RankDemo, Stagger } from '@/components/onboarding';
 import { SCHOOLS } from '@/data/onboarding';
 import { usePrefs } from '@/store/prefs';
 
@@ -10,8 +11,9 @@ export default function SchoolScreen() {
 
   return (
     <OnboardingFrame
-      step={1}
+      step={2}
       title="Your school"
+      hint="Answers from it come first."
       primaryLabel="Continue"
       primaryDisabled={prefs.school == null}
       onPrimary={next}
@@ -21,8 +23,19 @@ export default function SchoolScreen() {
       }}
     >
       {SCHOOLS.map((s, i) => (
-        <ChoiceRow key={s.key} last={i === SCHOOLS.length - 1} title={s.name} selected={prefs.school === s.key} onPress={() => update({ school: s.key })} />
+        <Stagger key={s.key} index={i}>
+          <ChoiceRow
+            last={i === SCHOOLS.length - 1}
+            title={s.name}
+            selected={prefs.school === s.key}
+            onPress={() => {
+              Haptics.selectionAsync();
+              update({ school: s.key });
+            }}
+          />
+        </Stagger>
       ))}
+      <RankDemo school={prefs.school} />
     </OnboardingFrame>
   );
 }

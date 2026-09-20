@@ -1,15 +1,18 @@
 import { useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, IconButton } from '@/components';
+import { Button } from '../Button';
+import { IconButton } from '../IconButton';
 import { fonts, space, type, useTheme } from '@/theme';
 
-export const ONBOARDING_STEPS = 2;
+export const ONBOARDING_STEPS = 3;
 
 interface Props {
   step: number; // 1-based
   title: string;
+  hint?: string; // one short line under the title
   children: ReactNode;
   primaryLabel: string;
   onPrimary: () => void;
@@ -17,7 +20,7 @@ interface Props {
   onSkip?: () => void;
 }
 
-export function OnboardingFrame({ step, title, children, primaryLabel, onPrimary, primaryDisabled, onSkip }: Props) {
+export function OnboardingFrame({ step, title, hint, children, primaryLabel, onPrimary, primaryDisabled, onSkip }: Props) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -41,7 +44,10 @@ export function OnboardingFrame({ step, title, children, primaryLabel, onPrimary
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-        <Text style={[type.largeTitle, { color: colors.ink }]}>{title}</Text>
+        <Animated.View entering={FadeInDown.duration(360)}>
+          <Text style={[type.largeTitle, { color: colors.ink }]}>{title}</Text>
+          {hint ? <Text style={[type.body, { color: colors.ink2, marginTop: 6 }]}>{hint}</Text> : null}
+        </Animated.View>
         <View style={{ marginTop: 28 }}>{children}</View>
       </ScrollView>
 
@@ -52,7 +58,7 @@ export function OnboardingFrame({ step, title, children, primaryLabel, onPrimary
   );
 }
 
-export { Button as PrimaryButton } from '@/components';
+export { Button as PrimaryButton } from '../Button';
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
