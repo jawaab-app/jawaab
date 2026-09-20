@@ -23,7 +23,7 @@ Set `ANDROID_HOME` to your SDK (`~/Library/Android/sdk` on macOS) and use the JD
 ```
 app/                expo-router routes
   _layout.tsx       fonts, splash, root stack
-  onboarding/       six-step first run: welcome, school, language, topics, publishers, done
+  onboarding/       first run: welcome, school, topics
   (tabs)/           Home · Topics · Saved, custom pill tab bar
   answer/[id].tsx   answer reader
   search.tsx        search

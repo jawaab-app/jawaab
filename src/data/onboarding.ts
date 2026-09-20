@@ -5,7 +5,7 @@ export const SCHOOLS: { key: SchoolKey; name: string; arabic: string; note: stri
   { key: 'maliki', name: 'Mālikī', arabic: 'المالكية', note: 'North and West Africa, the Gulf coast' },
   { key: 'shafii', name: 'Shāfiʿī', arabic: 'الشافعية', note: 'East Africa, Egypt, Yemen, Southeast Asia' },
   { key: 'hanbali', name: 'Ḥanbalī', arabic: 'الحنابلة', note: 'Saudi Arabia, Qatar' },
-  { key: 'unsure', name: 'Not sure yet', arabic: '', note: 'Show me answers from every school' },
+  { key: 'unsure', name: 'Not sure', arabic: '', note: 'Show me answers from every school' },
 ];
 
 export const LANGUAGES: { key: LanguageKey; name: string; native: string }[] = [
