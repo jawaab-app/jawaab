@@ -5,6 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { LibraryProvider } from '@/store/library';
 import { PrefsProvider, usePrefs } from '@/store/prefs';
 import { useTheme } from '@/theme';
 
@@ -13,7 +14,9 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   return (
     <PrefsProvider>
-      <RootNavigator />
+      <LibraryProvider>
+        <RootNavigator />
+      </LibraryProvider>
     </PrefsProvider>
   );
 }
@@ -52,6 +55,7 @@ function RootNavigator() {
         <Stack.Protected guard={prefs.onboarded}>
           <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
           <Stack.Screen name="answer/[id]" />
+          <Stack.Screen name="browse" />
           <Stack.Screen
             name="settings"
             options={{

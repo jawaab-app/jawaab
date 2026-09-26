@@ -9,3 +9,5 @@ export * from './SectionHeader';
 export * from './FlatTabBar';
 export * from './SettingsRow';
 export * from './SettingsPage';
+export * from './JmuView';
+export * from './LoadState';

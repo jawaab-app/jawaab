@@ -1,9 +1,9 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { type, useTheme } from '@/theme';
-import type { HistoryItem } from '@/data/sample';
+import type { RowItem } from '@/api/format';
 
 interface Props {
-  item: HistoryItem;
+  item: RowItem;
   onPress?: () => void;
   last?: boolean;
 }
@@ -18,7 +18,7 @@ export function HistoryRow({ item, onPress, last }: Props) {
         <Text style={[type.meta, { color: colors.ink2, flex: 1, marginRight: 12 }]} numberOfLines={1}>
           {item.publisher} · {item.school}
         </Text>
-        <Text style={[item.live ? type.metaStrong : type.meta, { color: item.live ? colors.ink : colors.ink3 }]}>{item.when}</Text>
+        {!!item.when && <Text style={[item.live ? type.metaStrong : type.meta, { color: item.live ? colors.ink : colors.ink3 }]}>{item.when}</Text>}
       </View>
     </Pressable>
   );
