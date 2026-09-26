@@ -1,0 +1,7 @@
+# API_DOMAIN is supplied by compose:
+#   empty -> ":80"  (plain HTTP on the Droplet IP, no cert)
+#   a real domain -> Caddy auto-provisions HTTPS for it.
+{$API_DOMAIN} {
+	encode gzip
+	reverse_proxy api:8000
+}

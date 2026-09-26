@@ -1,14 +1,14 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
 import { fonts, space, useTheme } from '@/theme';
-import type { Chapter } from '@/data/sample';
+import type { Chapter } from '@/data/chapters';
 
 // Chapters read as a row of hairline pills.
-export function ChapterCard({ chapter, onPress }: { chapter: Chapter; onPress?: () => void }) {
+export function ChapterCard({ chapter, count, onPress }: { chapter: Chapter; count?: number; onPress?: () => void }) {
   const { colors } = useTheme();
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.pill, { borderColor: colors.hair, opacity: pressed ? 0.5 : 1 }]}>
       <Text style={[styles.name, { color: colors.ink }]}>{chapter.name}</Text>
-      <Text style={[styles.count, { color: colors.ink3 }]}>{chapter.count}</Text>
+      {count !== undefined && <Text style={[styles.count, { color: colors.ink3 }]}>{count.toLocaleString()}</Text>}
     </Pressable>
   );
 }
