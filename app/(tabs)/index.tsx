@@ -5,21 +5,41 @@ import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChapterCard, HistoryRow, IconButton, Logo, SearchField, SectionHeader } from '@/components';
+import { api } from '@/api/client';
+import { madhabFilter, relativeTime, toRow } from '@/api/format';
+import { useApi, useQuestionCount, useSearchCount } from '@/api/hooks';
+import { ChapterCard, HistoryRow, IconButton, LoadState, Logo, SearchField, SectionHeader } from '@/components';
+import { CHAPTERS, type Chapter } from '@/data/chapters';
 import { SCHOOLS } from '@/data/onboarding';
-import { chapters, history, TOTAL_ANSWERS, TOTAL_CHAPTERS, trending } from '@/data/sample';
+import { useLibrary } from '@/store/library';
 import { usePrefs } from '@/store/prefs';
 import { fonts, GREETING, SKY_ART, SKY_DARK_ART, space, timeOfDay, type, useTheme } from '@/theme';
 
-type Segment = 'recent' | 'trending';
+type Segment = 'recent' | 'explore';
+
+const EXPLORE_SIZE = 5;
 
 export default function HomeScreen() {
   const { colors, isDark } = useTheme();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { prefs } = usePrefs();
-  const [segment, setSegment] = useState<Segment>('recent');
-  const rows = segment === 'trending' ? trending : history;
+  const { history } = useLibrary();
+  const [segment, setSegment] = useState<Segment>(history.length ? 'recent' : 'explore');
+  const madhab = madhabFilter(prefs.school);
+  const count = useQuestionCount(madhab);
+  const total = count.data?.total;
+
+  // A different handful of answers each day, from the reader's school.
+  const exploreOffset = total ? dailyOffset(Math.max(0, total - EXPLORE_SIZE)) : null;
+  const explore = useApi(
+    segment === 'explore' && exploreOffset !== null ? `explore:${madhab ?? '*'}:${exploreOffset}` : null,
+    (sig) => api.questions({ madhab, limit: EXPLORE_SIZE, offset: exploreOffset ?? 0 }, sig),
+  );
+  const rows =
+    segment === 'recent'
+      ? history.slice(0, 5).map((e) => toRow(e.question, relativeTime(e.at)))
+      : (explore.data?.items ?? []).map((q) => toRow(q));
 
   const tod = prefs.skyOverride ?? timeOfDay();
   const school = SCHOOLS.find((s) => s.key === prefs.school);
@@ -47,7 +67,11 @@ export default function HomeScreen() {
         <View style={[styles.pad, { marginTop: 40 }]}>
           <Text style={[type.hero, { color: heroInk }]}>{GREETING[tod]}</Text>
           <Text style={[type.body, { color: heroInk2, marginTop: 8 }]}>
-            Search {TOTAL_ANSWERS.toLocaleString()} answers across {TOTAL_CHAPTERS} chapters.
+            {total !== undefined
+              ? `Search ${total.toLocaleString()} ${madhab ? `${schoolLabel} ` : ''}answers.`
+              : count.error
+                ? 'Answers are offline right now.'
+                : 'Search the answers.'}
           </Text>
         </View>
 
@@ -57,28 +81,47 @@ export default function HomeScreen() {
 
         <View style={[styles.pad, { marginTop: 40 }]}>
           <View style={styles.toggle}>
-            {(['recent', 'trending'] as Segment[]).map((k) => (
+            {(['recent', 'explore'] as Segment[]).map((k) => (
               <Pressable key={k} onPress={() => setSegment(k)} hitSlop={8}>
-                <Text style={[styles.toggleText, { color: segment === k ? colors.ink : colors.ink3 }]}>{k === 'recent' ? 'Recent' : 'Trending'}</Text>
+                <Text style={[styles.toggleText, { color: segment === k ? colors.ink : colors.ink3 }]}>{k === 'recent' ? 'Recent' : 'Explore'}</Text>
               </Pressable>
             ))}
           </View>
           {rows.map((item, i) => (
             <HistoryRow key={item.id} item={item} last={i === rows.length - 1} onPress={() => router.push(`/answer/${item.id}`)} />
           ))}
+          {segment === 'recent' && rows.length === 0 && <LoadState empty="Answers you read will show up here." />}
+          {segment === 'explore' && (
+            <LoadState
+              loading={explore.loading || (count.loading && !total)}
+              error={explore.error ?? count.error}
+              onRetry={() => (count.error ? count.reload() : explore.reload())}
+              empty={!explore.loading && explore.data && rows.length === 0 ? 'No answers yet.' : null}
+            />
+          )}
         </View>
 
         <View style={[styles.pad, { marginTop: 28 }]}>
-          <SectionHeader title="Chapters" action="All 24" onAction={() => router.push('/topics')} />
+          <SectionHeader title="Chapters" action={`All ${CHAPTERS.length}`} onAction={() => router.push('/topics')} />
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.rail}>
-          {chapters.map((c) => (
-            <ChapterCard key={c.id} chapter={c} onPress={() => router.push('/topics')} />
+          {CHAPTERS.slice(0, 6).map((c) => (
+            <ChapterPill key={c.id} chapter={c} madhab={madhab} onPress={() => router.push({ pathname: '/browse', params: { chapter: c.id } })} />
           ))}
         </ScrollView>
       </ScrollView>
     </View>
   );
+}
+
+function ChapterPill({ chapter, madhab, onPress }: { chapter: Chapter; madhab: string | null; onPress: () => void }) {
+  const { data } = useSearchCount(chapter.query, madhab);
+  return <ChapterCard chapter={chapter} count={data?.total} onPress={onPress} />;
+}
+
+function dailyOffset(max: number): number {
+  const day = Math.floor(Date.now() / 86_400_000);
+  return max > 0 ? (day * 7919) % max : 0;
 }
 
 const styles = StyleSheet.create({
