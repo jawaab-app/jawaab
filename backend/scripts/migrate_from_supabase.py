@@ -42,9 +42,9 @@ def fetch_page(client: httpx.Client, table: str, key: str, after, headers: dict)
     """Next PAGE rows of `table` ordered by `key`, strictly after `after`."""
     params = {"select": "*", "limit": PAGE, "order": key}
     if after is not None:
-        # Quote string keys so PostgREST treats commas/parens in URLs literally.
-        value = after if isinstance(after, int) else '"' + str(after).replace('"', '\\"') + '"'
-        params[key] = f"gt.{value}"
+        # Plain operator filters take the raw value; quoting it makes PostgREST
+        # compare against the literal quotes and the page never advances.
+        params[key] = f"gt.{after}"
     for attempt in range(1, RETRIES + 1):
         try:
             r = client.get(
@@ -52,7 +52,10 @@ def fetch_page(client: httpx.Client, table: str, key: str, after, headers: dict)
                 headers=headers, params=params, timeout=120,
             )
             r.raise_for_status()
-            return r.json()
+            rows = r.json()
+            if rows and after is not None and rows[-1][key] == after:
+                raise RuntimeError(f"{table}: paging by {key} did not advance past {after!r}")
+            return rows
         except httpx.HTTPError as e:
             if attempt == RETRIES:
                 raise
