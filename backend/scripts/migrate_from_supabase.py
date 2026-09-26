@@ -6,12 +6,17 @@ never stores bulky HTML), derive `content_text`, and normalise tags into the
 
 Usage (env: SUPABASE_URL, SUPABASE_SERVICE_KEY, DATABASE_URL):
     python -m scripts.migrate_from_supabase
+
+Pages by key (`id > last`) rather than OFFSET: deep offsets over rows this
+large hit Supabase's statement timeout. Questions resume after the highest id
+already in Postgres; set MIGRATE_FULL=1 to re-copy everything.
 """
 from __future__ import annotations
 
 import os
 import re
 import sys
+import time
 
 import httpx
 import psycopg
@@ -19,7 +24,8 @@ from psycopg.rows import dict_row
 
 from app.services.jmu import compile_html
 
-PAGE = 1000
+PAGE = int(os.environ.get("MIGRATE_PAGE", "500"))
+RETRIES = 5
 _SLUG_RE = re.compile(r"[^a-z0-9]+")
 
 
@@ -32,23 +38,40 @@ def _pg_dsn() -> str:
     return os.environ["DATABASE_URL"].replace("postgresql+psycopg://", "postgresql://")
 
 
-def fetch_page(client: httpx.Client, table: str, offset: int, headers: dict):
-    r = client.get(
-        f"{os.environ['SUPABASE_URL'].rstrip('/')}/rest/v1/{table}",
-        headers=headers,
-        params={"select": "*", "limit": PAGE, "offset": offset, "order": "id"},
-        timeout=120,
-    )
-    r.raise_for_status()
-    return r.json()
+def fetch_page(client: httpx.Client, table: str, key: str, after, headers: dict):
+    """Next PAGE rows of `table` ordered by `key`, strictly after `after`."""
+    params = {"select": "*", "limit": PAGE, "order": key}
+    if after is not None:
+        # Quote string keys so PostgREST treats commas/parens in URLs literally.
+        value = after if isinstance(after, int) else '"' + str(after).replace('"', '\\"') + '"'
+        params[key] = f"gt.{value}"
+    for attempt in range(1, RETRIES + 1):
+        try:
+            r = client.get(
+                f"{os.environ['SUPABASE_URL'].rstrip('/')}/rest/v1/{table}",
+                headers=headers, params=params, timeout=120,
+            )
+            r.raise_for_status()
+            return r.json()
+        except httpx.HTTPError as e:
+            if attempt == RETRIES:
+                raise
+            print(f"[{table}] retry {attempt} after {e!r}", flush=True)
+            time.sleep(2 ** attempt)
 
 
 def migrate_questions(client: httpx.Client, conn: psycopg.Connection, headers: dict):
-    offset = 0
+    after = None
+    if os.environ.get("MIGRATE_FULL") != "1":
+        with conn.cursor() as cur:
+            cur.execute("SELECT max(id) AS m FROM questions")
+            after = cur.fetchone()["m"]
+        if after is not None:
+            print(f"[questions] resuming after id {after}", flush=True)
     tag_cache: dict[str, int] = {}
     total = 0
     while True:
-        rows = fetch_page(client, "questions", offset, headers)
+        rows = fetch_page(client, "questions", "id", after, headers)
         if not rows:
             break
         with conn.cursor() as cur:
@@ -99,16 +122,16 @@ def migrate_questions(client: httpx.Client, conn: psycopg.Connection, headers: d
                     )
         conn.commit()
         total += len(rows)
-        offset += PAGE
-        print(f"[questions] {total} migrated")
+        after = rows[-1]["id"]
+        print(f"[questions] {total} migrated", flush=True)
     return total
 
 
 def migrate_scrape_state(client: httpx.Client, conn: psycopg.Connection, headers: dict):
-    offset = 0
+    after = None
     total = 0
     while True:
-        rows = fetch_page(client, "scrape_state", offset, headers)
+        rows = fetch_page(client, "scrape_state", "url", after, headers)
         if not rows:
             break
         with conn.cursor() as cur:
@@ -122,8 +145,8 @@ def migrate_scrape_state(client: httpx.Client, conn: psycopg.Connection, headers
                 )
         conn.commit()
         total += len(rows)
-        offset += PAGE
-        print(f"[scrape_state] {total} migrated")
+        after = rows[-1]["url"]
+        print(f"[scrape_state] {total} migrated", flush=True)
     return total
 
 
