@@ -1,0 +1,118 @@
+name: CI/CD
+
+# Every PR and every push to main runs the app and backend checks.
+# The backend only deploys to the DigitalOcean droplet from main, and only
+# after both check jobs pass. Branch protection on main requires `app` and
+# `backend` to be green before anything can merge.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  app:
+    name: app
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Unit tests
+        run: npx jest --ci
+      - name: Bundle (Android + iOS)
+        run: |
+          npx expo export --platform android --output-dir dist/android
+          npx expo export --platform ios --output-dir dist/ios
+
+  backend:
+    name: backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: jawaab
+          POSTGRES_PASSWORD: jawaab
+          POSTGRES_DB: jawaab
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U jawaab -d jawaab"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+    env:
+      TEST_DATABASE_URL: postgresql+psycopg://jawaab:jawaab@localhost:5432/jawaab
+      TEST_REDIS_URL: redis://localhost:6379/1
+      REQUIRE_SERVICES: '1'
+      JWT_SECRET: ci-only-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+      - run: pip install -r requirements-dev.txt
+      - name: Apply schema
+        env:
+          PGPASSWORD: jawaab
+        run: for f in migrations/*.sql; do psql -h localhost -U jawaab -d jawaab -v ON_ERROR_STOP=1 -f "$f"; done
+      - name: Tests
+        run: python -m pytest -q
+      - name: Docker image builds
+        run: docker build -t jawaab-api:ci .
+
+  deploy:
+    name: deploy backend
+    needs: [app, backend]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: https://167-172-189-107.sslip.io/health
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - name: SSH setup
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Deploy
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          SSH="ssh -i ~/.ssh/id_deploy -o BatchMode=yes"
+          # Keep the running release so a failed health check can roll back.
+          $SSH root@"$HOST" 'rm -rf /srv/jawaab/backend.prev && cp -a /srv/jawaab/backend /srv/jawaab/backend.prev'
+          rsync -az --delete -e "$SSH" \
+            --exclude '.env' --exclude '.env.bak*' --exclude '.venv' --exclude '__pycache__' --exclude '.pytest_cache' \
+            backend/ root@"$HOST":/srv/jawaab/backend/
+          $SSH root@"$HOST" 'bash /srv/jawaab/backend/scripts/deploy.sh'
