@@ -76,7 +76,13 @@ export default function HomeScreen() {
         </View>
 
         <View style={[styles.pad, { marginTop: 26 }]}>
-          <SearchField placeholder="Ask anything…" chip={schoolLabel} onPress={() => router.push('/search')} onChip={() => router.push('/settings')} />
+          <SearchField
+            placeholder="Ask anything…"
+            chip={schoolLabel}
+            onPress={() => router.push('/search')}
+            onChip={() => router.push('/settings')}
+            onMic={() => router.push({ pathname: '/search', params: { voice: '1' } })}
+          />
         </View>
 
         <View style={[styles.pad, { marginTop: 40 }]}>
