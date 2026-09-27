@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
-from sqlalchemy import func, select
+from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session, selectinload
 
 from app import cache
@@ -45,11 +45,12 @@ def list_questions(
     source: str | None = None,
     scholar: str | None = None,
     tag: str | None = None,
+    prefer: str | None = Query(None, description="List this school first, keep the rest."),
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
 ):
     params = {"madhab": madhab, "source": source, "scholar": scholar,
-              "tag": tag, "limit": limit, "offset": offset}
+              "tag": tag, "prefer": prefer, "limit": limit, "offset": offset}
 
     def build():
         stmt = select(Question)
@@ -71,7 +72,11 @@ def list_questions(
             count_stmt = count_stmt.where(Question.id.in_(sub))
 
         total = db.execute(count_stmt).scalar_one()
-        stmt = stmt.order_by(Question.id).limit(limit).offset(offset)
+        if prefer:
+            stmt = stmt.order_by(case((Question.madhab == prefer, 0), else_=1), Question.id)
+        else:
+            stmt = stmt.order_by(Question.id)
+        stmt = stmt.limit(limit).offset(offset)
         rows = db.execute(stmt).scalars().all()
         items = [QuestionSummary.model_validate(r).model_dump() for r in rows]
         return {"items": items, "total": total, "limit": limit, "offset": offset}
