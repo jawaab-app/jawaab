@@ -1,7 +1,7 @@
-import { summaryOf, withRead, withSaved, type Library } from '../library';
+import { summaryOf, withRead, withSaved, withSearch, type Library } from '../library';
 
 const q = (id: number) => ({ id, slug: `s${id}`, title: `Q${id}`, madhab: 'hanafi', source_slug: 'askimam', scholar: null });
-const empty: Library = { saved: [], history: [] };
+const empty: Library = { saved: [], history: [], searches: [] };
 
 it('records reads newest first without duplicates', () => {
   let lib = withRead(empty, q(1), 1);
@@ -29,4 +29,14 @@ it('toggles saved answers', () => {
 it('stores only summary fields', () => {
   const detail = { ...q(9), url: 'u', content_jmu: 'long', tags: [] };
   expect(summaryOf(detail)).toEqual(q(9));
+});
+
+it('keeps recent searches newest first, deduplicated case-insensitively, capped at ten', () => {
+  let lib = withSearch(empty, 'zakat on gold');
+  lib = withSearch(lib, 'wudu');
+  lib = withSearch(lib, 'Zakat on Gold');
+  expect(lib.searches).toEqual(['Zakat on Gold', 'wudu']);
+  for (let i = 0; i < 12; i++) lib = withSearch(lib, `q${i}`);
+  expect(lib.searches).toHaveLength(10);
+  expect(withSearch(lib, '  ').searches).toEqual(lib.searches);
 });
