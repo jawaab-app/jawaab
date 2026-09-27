@@ -104,7 +104,7 @@ def test_list_prefers_school_without_excluding_others(client, seed_pair):
 
 @requires_services
 def test_search_matches_last_word_as_prefix(client, seed_question):
-    r = client.get("/search", params={"q": "ruling fasti"}).json()
+    r = client.get("/search", params={"q": "ruling rama"}).json()
     assert r["fuzzy"] is False
     assert any(q["id"] == seed_question for q in r["items"])
 

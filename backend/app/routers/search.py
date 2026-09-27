@@ -28,7 +28,10 @@ _OPERATOR = re.compile(r'["()]|(?:^|\s)(?:or|-)(?:\s|$)', re.IGNORECASE)
 
 def build_tsquery(q: str):
     """websearch query, with the last word matched as a prefix while it is
-    still being typed (no trailing space, no quotes/operators)."""
+    still being typed (no trailing space, no quotes/operators).
+
+    Lexemes are stemmed, so a prefix longer than the stem ("fasti" against
+    "fast") misses; the fuzzy fallback below catches those."""
     words = q.split()
     last = words[-1] if words else ""
     if len(words) >= 1 and not q.endswith(" ") and len(last) >= 3 and _WORD.match(last) and not _OPERATOR.search(q):
@@ -79,7 +82,8 @@ def search(
         fuzzy = False
         if total < FUZZY_BELOW:
             # Typo fallback: trigram word similarity against titles (GIN trgm index).
-            db.execute(text("SET LOCAL pg_trgm.word_similarity_threshold = :t"), {"t": FUZZY_WORD_THRESHOLD})
+            # SET takes no bind parameters; the value is a module constant.
+            db.execute(text(f"SET LOCAL pg_trgm.word_similarity_threshold = {FUZZY_WORD_THRESHOLD}"))
             match = Question.title.op("%>")(q)
             if madhab:
                 match = match & (Question.madhab == madhab)
