@@ -42,9 +42,10 @@ export async function getJson<T>(path: string, params?: Params, signal?: AbortSi
   }
 }
 
-/** `madhab` is omitted when the reader follows every school. */
+/** `madhab` restricts to one school; `prefer` ranks a school first and keeps the rest. */
 export interface ListParams {
   madhab?: string | null;
+  prefer?: string | null;
   tag?: string | null;
   source?: string | null;
   limit?: number;
@@ -54,6 +55,6 @@ export interface ListParams {
 export const api = {
   questions: (p: ListParams = {}, signal?: AbortSignal) => getJson<Page>('/questions', { ...p }, signal),
   question: (id: number | string, signal?: AbortSignal) => getJson<QuestionDetail>(`/questions/${id}`, undefined, signal),
-  search: (q: string, p: { madhab?: string | null; limit?: number; offset?: number } = {}, signal?: AbortSignal) =>
+  search: (q: string, p: { madhab?: string | null; prefer?: string | null; limit?: number; offset?: number } = {}, signal?: AbortSignal) =>
     getJson<SearchPage>('/search', { q, ...p }, signal),
 };

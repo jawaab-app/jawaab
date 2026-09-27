@@ -28,8 +28,10 @@ export default function SearchScreen() {
   const inputRef = useRef<TextInput>(null);
 
   const school = madhabFilter(prefs.school);
-  const [scope, setScope] = useState<Scope>(school ? 'school' : 'all');
+  // Default: every school, the reader's ranked first. 'school' narrows to it.
+  const [scope, setScope] = useState<Scope>('all');
   const madhab = scope === 'school' ? school : null;
+  const prefer = scope === 'all' ? school : null;
 
   const [q, setQ] = useState('');
   const [query, setQuery] = useState('');
@@ -41,8 +43,21 @@ export default function SearchScreen() {
 
   const active = query.length >= 2;
   const terms = useMemo(() => queryTerms(query), [query]);
-  const load = useCallback((offset: number, signal: AbortSignal) => api.search(query, { madhab, limit: PAGE, offset }, signal), [query, madhab]);
-  const results = usePaged(active ? `search:${madhab ?? '*'}:${query}` : null, load);
+  const load = useCallback(
+    (offset: number, signal: AbortSignal) => api.search(query, { madhab, prefer, limit: PAGE, offset }, signal),
+    [query, madhab, prefer],
+  );
+  const results = usePaged(active ? `search:${madhab ?? '*'}:${prefer ?? '*'}:${query}` : null, load);
+  // The archive holds the same answer more than once under different ids; show each title once.
+  const items = useMemo(() => {
+    const seen = new Set<string>();
+    return results.items.filter((q) => {
+      const k = q.title.trim().toLowerCase();
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+  }, [results.items]);
 
   const submit = (text: string) => {
     const next = text.trim();
@@ -99,7 +114,7 @@ export default function SearchScreen() {
 
       {active ? (
         <FlatList
-          data={results.items}
+          data={items}
           keyExtractor={(item) => String(item.id)}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
@@ -107,14 +122,20 @@ export default function SearchScreen() {
           ListHeaderComponent={
             <View style={styles.header}>
               <Text style={[type.meta, { color: colors.ink3 }]}>
-                {results.total === null ? (results.loading ? 'Searching…' : '') : `${results.total.toLocaleString()} answers`}
+                {results.total === null
+                  ? results.loading
+                    ? 'Searching…'
+                    : ''
+                  : results.fuzzy
+                    ? `Close matches · ${results.total.toLocaleString()}`
+                    : `${results.total.toLocaleString()} answers`}
               </Text>
               {school && (
                 <View style={styles.scope}>
                   {(['school', 'all'] as Scope[]).map((s) => (
                     <Pressable key={s} onPress={() => setScope(s)} hitSlop={6}>
                       <Text style={[styles.scopeText, { color: scope === s ? colors.ink : colors.ink3, fontFamily: scope === s ? fonts.semibold : fonts.medium }]}>
-                        {s === 'school' ? schoolLabel(school) : 'All schools'}
+                        {s === 'school' ? `${schoolLabel(school)} only` : 'All schools'}
                       </Text>
                     </Pressable>
                   ))}
@@ -123,7 +144,7 @@ export default function SearchScreen() {
             </View>
           }
           renderItem={({ item, index }) => (
-            <HistoryRow item={toRow(item)} highlight={terms} last={index === results.items.length - 1} onPress={() => open(item)} />
+            <HistoryRow item={toRow(item)} highlight={results.fuzzy ? undefined : terms} last={index === items.length - 1} onPress={() => open(item)} />
           )}
           onEndReached={results.loadMore}
           onEndReachedThreshold={0.5}
