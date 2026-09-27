@@ -2,7 +2,8 @@ import { useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, IconButton } from '@/components';
+import { Button } from '../Button';
+import { IconButton } from '../IconButton';
 import { fonts, space, type, useTheme } from '@/theme';
 
 export const ONBOARDING_STEPS = 2;
@@ -52,7 +53,7 @@ export function OnboardingFrame({ step, title, children, primaryLabel, onPrimary
   );
 }
 
-export { Button as PrimaryButton } from '@/components';
+export { Button as PrimaryButton } from '../Button';
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
