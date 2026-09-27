@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { IconButton } from '@/components';
+import { IconButton } from './IconButton';
 import { space, type, useTheme } from '@/theme';
 
 // Shell for a page inside the settings sheet. Back on sub-pages, close on the root.
