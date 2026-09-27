@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, Keyboard, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -10,6 +10,7 @@ import { usePaged } from '@/api/hooks';
 import type { QuestionSummary } from '@/api/types';
 import { HistoryRow, LoadState } from '@/components';
 import { SEARCH_SUGGESTIONS } from '@/data/suggestions';
+import { useVoiceSearch } from '@/hooks/useVoiceSearch';
 import { useLibrary } from '@/store/library';
 import { usePrefs } from '@/store/prefs';
 import { fonts, space, type, useTheme } from '@/theme';
@@ -26,6 +27,7 @@ export default function SearchScreen() {
   const { prefs } = usePrefs();
   const { history, searches, addSearch, clearSearches } = useLibrary();
   const inputRef = useRef<TextInput>(null);
+  const { voice: voiceParam } = useLocalSearchParams<{ voice?: string }>();
 
   const school = madhabFilter(prefs.school);
   // Default: every school, the reader's ranked first. 'school' narrows to it.
@@ -67,6 +69,19 @@ export default function SearchScreen() {
     Keyboard.dismiss();
   };
 
+  // Voice: interim words fill the field, the final phrase runs the search.
+  const voice = useVoiceSearch((text) => submit(text));
+  useEffect(() => {
+    if (voice.listening) setQ(voice.transcript);
+  }, [voice.listening, voice.transcript]);
+  const startedRef = useRef(false);
+  useEffect(() => {
+    if (voiceParam === '1' && voice.available && !startedRef.current) {
+      startedRef.current = true;
+      voice.start();
+    }
+  }, [voiceParam, voice]);
+
   const open = (item: QuestionSummary) => {
     if (query.length >= 2) addSearch(query);
     router.push(`/answer/${item.id}`);
@@ -86,14 +101,24 @@ export default function SearchScreen() {
             value={q}
             onChangeText={setQ}
             onSubmitEditing={() => submit(q)}
-            placeholder="Ask anything…"
-            placeholderTextColor={colors.ink2}
+            placeholder={voice.listening ? 'Listening…' : 'Ask anything…'}
+            placeholderTextColor={voice.listening ? colors.ink : colors.ink2}
             style={[styles.input, { color: colors.ink }]}
             returnKeyType="search"
             autoCorrect={false}
             autoCapitalize="none"
           />
-          {q.length > 0 && (
+          {voice.available && (
+            <Pressable
+              onPress={() => (voice.listening ? voice.stop() : voice.start())}
+              hitSlop={10}
+              accessibilityLabel={voice.listening ? 'Stop listening' : 'Voice search'}
+              style={[styles.mic, voice.listening && { backgroundColor: colors.button }]}
+            >
+              <Ionicons name={voice.listening ? 'stop' : 'mic-outline'} size={voice.listening ? 14 : 18} color={voice.listening ? colors.buttonInk : colors.ink2} />
+            </Pressable>
+          )}
+          {q.length > 0 && !voice.listening && (
             <Pressable
               onPress={() => {
                 setQ('');
@@ -111,6 +136,8 @@ export default function SearchScreen() {
           <Text style={[styles.cancel, { color: colors.ink }]}>Cancel</Text>
         </Pressable>
       </View>
+
+      {voice.error && <Text style={[type.meta, styles.pad, { color: colors.ink2, marginTop: 6 }]}>{voice.error}</Text>}
 
       {active ? (
         <FlatList
@@ -224,6 +251,7 @@ const styles = StyleSheet.create({
   field: { flex: 1, height: 44, borderRadius: space.pill, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 8 },
   input: { flex: 1, fontFamily: fonts.regular, fontSize: 17, letterSpacing: -0.3, paddingVertical: 0 },
   cancel: { fontFamily: fonts.medium, fontSize: 16, letterSpacing: -0.3 },
+  mic: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 12, paddingBottom: 4 },
   scope: { flexDirection: 'row', gap: 14 },
   scopeText: { fontSize: 13, letterSpacing: -0.2 },
