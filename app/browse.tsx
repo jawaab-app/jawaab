@@ -25,7 +25,7 @@ export default function BrowseScreen() {
   const key = chapter ? `chapter:${chapter.id}:${madhab ?? '*'}` : tag ? `tag:${tag}:${madhab ?? '*'}` : null;
   const load = useCallback(
     (offset: number, signal: AbortSignal) =>
-      chapter ? api.search(chapter.query, { madhab, limit: PAGE, offset }, signal) : api.questions({ tag, madhab, limit: PAGE, offset }, signal),
+      chapter ? api.search(chapter.query, { prefer: madhab, limit: PAGE, offset }, signal) : api.questions({ tag, prefer: madhab, limit: PAGE, offset }, signal),
     [chapter, tag, madhab],
   );
   const list = usePaged(key, load);
@@ -46,7 +46,7 @@ export default function BrowseScreen() {
             {chapter && <Text style={[styles.arabic, { color: colors.ink2 }]}>{chapter.arabic}</Text>}
             <Text style={[type.body, { color: colors.ink2, marginTop: 8 }]}>
               {list.total !== null ? `${list.total.toLocaleString()} answers` : ' '}
-              {madhab ? ` · ${schoolLabel(madhab)}` : ''}
+              {madhab ? ` · ${schoolLabel(madhab)} first` : ''}
             </Text>
           </View>
         }

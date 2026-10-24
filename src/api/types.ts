@@ -36,6 +36,8 @@ export interface SearchHit extends QuestionSummary {
 
 export interface SearchPage extends Page<SearchHit> {
   query: string;
+  /** Nothing matched the words; these are close title matches instead. */
+  fuzzy?: boolean;
 }
 
 export interface FacetCount {

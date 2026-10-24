@@ -13,16 +13,14 @@ A search engine for Islamic answers. Jawāb indexes answers other people wrote, 
 
 ```bash
 npm install
-npm run android   # needs an Android emulator or device
-npm test          # unit tests
-npm run typecheck
+npm run android   # builds the dev client and installs it on the running emulator or device
 ```
 
-The app reads answers from the Jawāb API on the DigitalOcean droplet
-(`https://167-172-189-107.sslip.io`, ~98k answers). To use another backend, copy
-`.env.example` to `.env.local` and change `EXPO_PUBLIC_API_URL`.
+The first build takes a few minutes and creates `android/` (ignored by git). After that, `npx expo start --dev-client` alone is enough; the installed app reloads from Metro.
 
-Set `ANDROID_HOME` to your SDK (`~/Library/Android/sdk` on macOS) and use the JDK bundled with Android Studio for native builds.
+Expo Go no longer runs the app: voice search uses a native module (`expo-speech-recognition`) that Expo Go doesn't bundle.
+
+Set `ANDROID_HOME` to your SDK (`~/Library/Android/sdk` on macOS) and `JAVA_HOME` to the JDK bundled with Android Studio.
 
 ## Layout
 

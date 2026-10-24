@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, Keyboard, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -10,6 +10,7 @@ import { usePaged } from '@/api/hooks';
 import type { QuestionSummary } from '@/api/types';
 import { HistoryRow, LoadState } from '@/components';
 import { SEARCH_SUGGESTIONS } from '@/data/suggestions';
+import { useVoiceSearch } from '@/hooks/useVoiceSearch';
 import { useLibrary } from '@/store/library';
 import { usePrefs } from '@/store/prefs';
 import { fonts, space, type, useTheme } from '@/theme';
@@ -26,10 +27,13 @@ export default function SearchScreen() {
   const { prefs } = usePrefs();
   const { history, searches, addSearch, clearSearches } = useLibrary();
   const inputRef = useRef<TextInput>(null);
+  const { voice: voiceParam } = useLocalSearchParams<{ voice?: string }>();
 
   const school = madhabFilter(prefs.school);
-  const [scope, setScope] = useState<Scope>(school ? 'school' : 'all');
+  // Default: every school, the reader's ranked first. 'school' narrows to it.
+  const [scope, setScope] = useState<Scope>('all');
   const madhab = scope === 'school' ? school : null;
+  const prefer = scope === 'all' ? school : null;
 
   const [q, setQ] = useState('');
   const [query, setQuery] = useState('');
@@ -41,8 +45,21 @@ export default function SearchScreen() {
 
   const active = query.length >= 2;
   const terms = useMemo(() => queryTerms(query), [query]);
-  const load = useCallback((offset: number, signal: AbortSignal) => api.search(query, { madhab, limit: PAGE, offset }, signal), [query, madhab]);
-  const results = usePaged(active ? `search:${madhab ?? '*'}:${query}` : null, load);
+  const load = useCallback(
+    (offset: number, signal: AbortSignal) => api.search(query, { madhab, prefer, limit: PAGE, offset }, signal),
+    [query, madhab, prefer],
+  );
+  const results = usePaged(active ? `search:${madhab ?? '*'}:${prefer ?? '*'}:${query}` : null, load);
+  // The archive holds the same answer more than once under different ids; show each title once.
+  const items = useMemo(() => {
+    const seen = new Set<string>();
+    return results.items.filter((q) => {
+      const k = q.title.trim().toLowerCase();
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+  }, [results.items]);
 
   const submit = (text: string) => {
     const next = text.trim();
@@ -51,6 +68,19 @@ export default function SearchScreen() {
     if (next.length >= 2) addSearch(next);
     Keyboard.dismiss();
   };
+
+  // Voice: interim words fill the field, the final phrase runs the search.
+  const voice = useVoiceSearch((text) => submit(text));
+  useEffect(() => {
+    if (voice.listening) setQ(voice.transcript);
+  }, [voice.listening, voice.transcript]);
+  const startedRef = useRef(false);
+  useEffect(() => {
+    if (voiceParam === '1' && voice.available && !startedRef.current) {
+      startedRef.current = true;
+      voice.start();
+    }
+  }, [voiceParam, voice]);
 
   const open = (item: QuestionSummary) => {
     if (query.length >= 2) addSearch(query);
@@ -71,14 +101,24 @@ export default function SearchScreen() {
             value={q}
             onChangeText={setQ}
             onSubmitEditing={() => submit(q)}
-            placeholder="Ask anything…"
-            placeholderTextColor={colors.ink2}
+            placeholder={voice.listening ? 'Listening…' : 'Ask anything…'}
+            placeholderTextColor={voice.listening ? colors.ink : colors.ink2}
             style={[styles.input, { color: colors.ink }]}
             returnKeyType="search"
             autoCorrect={false}
             autoCapitalize="none"
           />
-          {q.length > 0 && (
+          {voice.available && (
+            <Pressable
+              onPress={() => (voice.listening ? voice.stop() : voice.start())}
+              hitSlop={10}
+              accessibilityLabel={voice.listening ? 'Stop listening' : 'Voice search'}
+              style={[styles.mic, voice.listening && { backgroundColor: colors.button }]}
+            >
+              <Ionicons name={voice.listening ? 'stop' : 'mic-outline'} size={voice.listening ? 14 : 18} color={voice.listening ? colors.buttonInk : colors.ink2} />
+            </Pressable>
+          )}
+          {q.length > 0 && !voice.listening && (
             <Pressable
               onPress={() => {
                 setQ('');
@@ -97,9 +137,11 @@ export default function SearchScreen() {
         </Pressable>
       </View>
 
+      {voice.error && <Text style={[type.meta, styles.pad, { color: colors.ink2, marginTop: 6 }]}>{voice.error}</Text>}
+
       {active ? (
         <FlatList
-          data={results.items}
+          data={items}
           keyExtractor={(item) => String(item.id)}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
@@ -107,14 +149,20 @@ export default function SearchScreen() {
           ListHeaderComponent={
             <View style={styles.header}>
               <Text style={[type.meta, { color: colors.ink3 }]}>
-                {results.total === null ? (results.loading ? 'Searching…' : '') : `${results.total.toLocaleString()} answers`}
+                {results.total === null
+                  ? results.loading
+                    ? 'Searching…'
+                    : ''
+                  : results.fuzzy
+                    ? `Close matches · ${results.total.toLocaleString()}`
+                    : `${results.total.toLocaleString()} answers`}
               </Text>
               {school && (
                 <View style={styles.scope}>
                   {(['school', 'all'] as Scope[]).map((s) => (
                     <Pressable key={s} onPress={() => setScope(s)} hitSlop={6}>
                       <Text style={[styles.scopeText, { color: scope === s ? colors.ink : colors.ink3, fontFamily: scope === s ? fonts.semibold : fonts.medium }]}>
-                        {s === 'school' ? schoolLabel(school) : 'All schools'}
+                        {s === 'school' ? `${schoolLabel(school)} only` : 'All schools'}
                       </Text>
                     </Pressable>
                   ))}
@@ -123,7 +171,7 @@ export default function SearchScreen() {
             </View>
           }
           renderItem={({ item, index }) => (
-            <HistoryRow item={toRow(item)} highlight={terms} last={index === results.items.length - 1} onPress={() => open(item)} />
+            <HistoryRow item={toRow(item)} highlight={results.fuzzy ? undefined : terms} last={index === items.length - 1} onPress={() => open(item)} />
           )}
           onEndReached={results.loadMore}
           onEndReachedThreshold={0.5}
@@ -203,6 +251,7 @@ const styles = StyleSheet.create({
   field: { flex: 1, height: 44, borderRadius: space.pill, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 8 },
   input: { flex: 1, fontFamily: fonts.regular, fontSize: 17, letterSpacing: -0.3, paddingVertical: 0 },
   cancel: { fontFamily: fonts.medium, fontSize: 16, letterSpacing: -0.3 },
+  mic: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 12, paddingBottom: 4 },
   scope: { flexDirection: 'row', gap: 14 },
   scopeText: { fontSize: 13, letterSpacing: -0.2 },

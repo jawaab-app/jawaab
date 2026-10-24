@@ -27,14 +27,14 @@ export default function HomeScreen() {
   const { history } = useLibrary();
   const [segment, setSegment] = useState<Segment>(history.length ? 'recent' : 'explore');
   const madhab = madhabFilter(prefs.school);
-  const count = useQuestionCount(madhab);
+  const count = useQuestionCount(null);
   const total = count.data?.total;
 
-  // A different handful of answers each day, from the reader's school.
+  // A different handful of answers each day, the reader's school first.
   const exploreOffset = total ? dailyOffset(Math.max(0, total - EXPLORE_SIZE)) : null;
   const explore = useApi(
     segment === 'explore' && exploreOffset !== null ? `explore:${madhab ?? '*'}:${exploreOffset}` : null,
-    (sig) => api.questions({ madhab, limit: EXPLORE_SIZE, offset: exploreOffset ?? 0 }, sig),
+    (sig) => api.questions({ prefer: madhab, limit: EXPLORE_SIZE, offset: exploreOffset ?? 0 }, sig),
   );
   const rows =
     segment === 'recent'
@@ -68,7 +68,7 @@ export default function HomeScreen() {
           <Text style={[type.hero, { color: heroInk }]}>{GREETING[tod]}</Text>
           <Text style={[type.body, { color: heroInk2, marginTop: 8 }]}>
             {total !== undefined
-              ? `Search ${total.toLocaleString()} ${madhab ? `${schoolLabel} ` : ''}answers.`
+              ? `Search ${total.toLocaleString()} answers.`
               : count.error
                 ? 'Answers are offline right now.'
                 : 'Search the answers.'}
@@ -76,7 +76,13 @@ export default function HomeScreen() {
         </View>
 
         <View style={[styles.pad, { marginTop: 26 }]}>
-          <SearchField placeholder="Ask anything…" chip={schoolLabel} onPress={() => router.push('/search')} onChip={() => router.push('/settings')} />
+          <SearchField
+            placeholder="Ask anything…"
+            chip={schoolLabel}
+            onPress={() => router.push('/search')}
+            onChip={() => router.push('/settings')}
+            onMic={() => router.push({ pathname: '/search', params: { voice: '1' } })}
+          />
         </View>
 
         <View style={[styles.pad, { marginTop: 40 }]}>
@@ -106,7 +112,7 @@ export default function HomeScreen() {
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.rail}>
           {CHAPTERS.slice(0, 6).map((c) => (
-            <ChapterPill key={c.id} chapter={c} madhab={madhab} onPress={() => router.push({ pathname: '/browse', params: { chapter: c.id } })} />
+            <ChapterPill key={c.id} chapter={c} onPress={() => router.push({ pathname: '/browse', params: { chapter: c.id } })} />
           ))}
         </ScrollView>
       </ScrollView>
@@ -114,8 +120,8 @@ export default function HomeScreen() {
   );
 }
 
-function ChapterPill({ chapter, madhab, onPress }: { chapter: Chapter; madhab: string | null; onPress: () => void }) {
-  const { data } = useSearchCount(chapter.query, madhab);
+function ChapterPill({ chapter, onPress }: { chapter: Chapter; onPress: () => void }) {
+  const { data } = useSearchCount(chapter.query, null);
   return <ChapterCard chapter={chapter} count={data?.total} onPress={onPress} />;
 }
 

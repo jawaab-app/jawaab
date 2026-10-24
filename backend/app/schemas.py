@@ -45,6 +45,9 @@ class SearchPage(BaseModel):
     limit: int
     offset: int
     query: str
+    # True when nothing matched the words and the hits come from a fuzzy
+    # title match instead.
+    fuzzy: bool = False
 
 
 class FacetCount(BaseModel):

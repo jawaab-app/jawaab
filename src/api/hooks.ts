@@ -90,6 +90,8 @@ type PageLoader = (offset: number, signal: AbortSignal) => Promise<Page<Question
 export interface Paged {
   items: QuestionSummary[];
   total: number | null;
+  /** Search only: results are fuzzy title matches, not word matches. */
+  fuzzy: boolean;
   loading: boolean;
   error: ApiError | null;
   hasMore: boolean;
@@ -103,6 +105,7 @@ export interface Paged {
 export function usePaged(key: string | null, load: PageLoader): Paged {
   const [items, setItems] = useState<QuestionSummary[]>([]);
   const [total, setTotal] = useState<number | null>(null);
+  const [fuzzy, setFuzzy] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
   const [nonce, setNonce] = useState(0);
@@ -128,6 +131,7 @@ export function usePaged(key: string | null, load: PageLoader): Paged {
           return [...base, ...page.items.filter((q) => !seen.has(q.id))];
         });
         setTotal(page.total);
+        setFuzzy(!!(page as { fuzzy?: boolean }).fuzzy);
         setLoading(false);
       })
       .catch((e: unknown) => {
@@ -141,6 +145,7 @@ export function usePaged(key: string | null, load: PageLoader): Paged {
     keyRef.current = key;
     setItems([]);
     setTotal(null);
+    setFuzzy(false);
     setError(null);
     if (key) fetchPage(0, true);
     else {
@@ -163,5 +168,5 @@ export function usePaged(key: string | null, load: PageLoader): Paged {
     else setNonce((n) => n + 1);
   }, [loading, items.length, fetchPage]);
 
-  return { items, total, loading, error, hasMore, loadMore, retry, reload };
+  return { items, total, fuzzy, loading, error, hasMore, loadMore, retry, reload };
 }
